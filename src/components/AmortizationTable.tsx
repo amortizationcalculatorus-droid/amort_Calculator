@@ -3,11 +3,72 @@ import { AmortizationResult, formatCurrencyPrecise, exportToCSV } from '@/lib/am
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ScrollReveal } from './ScrollAnimations';
-import { Download, Printer, ChevronDown, ChevronRight, Table, Calendar, DollarSign, TrendingUp, Percent } from 'lucide-react';
+import { Download, Printer, ChevronDown, ChevronRight, Table, Calendar, DollarSign, TrendingUp, Percent, FileText } from 'lucide-react';
+import { toast } from 'sonner';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface Props {
   result: AmortizationResult;
 }
+
+// Helper function to export to PDF
+const exportToPDF = (schedule: AmortizationResult['schedule'], result: AmortizationResult) => {
+  try {
+    const doc = new jsPDF({ orientation: 'landscape' });
+
+    // Add title
+    doc.setFontSize(18);
+    doc.text('Amortization Schedule', 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 22);
+
+    // Add summary info
+    doc.setFontSize(10);
+    doc.text(`Monthly Payment: ${formatCurrencyPrecise(result.monthlyPayment)}`, 14, 30);
+    doc.text(`Total Interest: ${formatCurrencyPrecise(result.totalInterest)}`, 14, 36);
+    doc.text(`Total Cost: ${formatCurrencyPrecise(result.totalCost)}`, 14, 42);
+    doc.text(`Payoff Date: ${result.payoffDate.toLocaleDateString()}`, 14, 48);
+
+    // Prepare data for table
+    const tableData = schedule.map(entry => [
+      entry.paymentNumber.toString(),
+      entry.date.toLocaleDateString(),
+      formatCurrencyPrecise(entry.beginningBalance),
+      formatCurrencyPrecise(entry.paymentAmount),
+      formatCurrencyPrecise(entry.principalPortion),
+      formatCurrencyPrecise(entry.interestPortion),
+      entry.extraPayment > 0 ? formatCurrencyPrecise(entry.extraPayment) : '—',
+      formatCurrencyPrecise(entry.endingBalance),
+    ]);
+
+    autoTable(doc, {
+      head: [['#', 'Date', 'Start Balance', 'Payment', 'Principal', 'Interest', 'Extra', 'End Balance']],
+      body: tableData,
+      startY: 55,
+      theme: 'striped',
+      headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], fontSize: 8 },
+      bodyStyles: { fontSize: 7 },
+      columnStyles: {
+        0: { cellWidth: 15 },
+        1: { cellWidth: 25 },
+        2: { cellWidth: 30 },
+        3: { cellWidth: 28 },
+        4: { cellWidth: 30 },
+        5: { cellWidth: 28 },
+        6: { cellWidth: 25 },
+        7: { cellWidth: 30 },
+      },
+      margin: { left: 10, right: 10 },
+    });
+
+    doc.save('amortization-schedule.pdf');
+    toast.success('PDF exported successfully!');
+  } catch (error) {
+    console.error('PDF export error:', error);
+    toast.error('Failed to export PDF. Please try again.');
+  }
+};
 
 export function AmortizationTable({ result }: Props) {
   const { schedule } = result;
@@ -38,6 +99,23 @@ export function AmortizationTable({ result }: Props) {
     setExpandedYears(next);
   };
 
+  const handleCSVExport = () => {
+    const dataToExport = selectedYear === 'all' ? schedule : filtered;
+    exportToCSV(dataToExport);
+    toast.success(`CSV exported with ${dataToExport.length} payment records!`);
+  };
+
+  const handlePDFExport = () => {
+    const dataToExport = selectedYear === 'all' ? schedule : filtered;
+    // Create a temporary result with filtered data for PDF export
+    const filteredResult = {
+      ...result,
+      schedule: dataToExport,
+      payoffDate: dataToExport.length > 0 ? dataToExport[dataToExport.length - 1].date : result.payoffDate,
+    };
+    exportToPDF(dataToExport, filteredResult);
+  };
+
   return (
     <ScrollReveal>
       <div className="bg-card rounded-2xl overflow-hidden border border-border/50 warm-shadow-lg">
@@ -47,7 +125,7 @@ export function AmortizationTable({ result }: Props) {
               <Table className="w-5 h-5 text-primary" />
             </div>
             <div className="min-w-0">
-              <h3 className="font-serif  font-bold truncate">Amortization Schedule</h3>
+              <h3 className="font-serif font-bold truncate">Amortization Schedule</h3>
               <p className="text-xs text-muted-foreground">{schedule.length} total payments • Tap year to expand</p>
             </div>
           </div>
@@ -64,13 +142,22 @@ export function AmortizationTable({ result }: Props) {
             
             <div className="flex gap-2">
               <motion.button
-                onClick={() => exportToCSV(schedule)}
+                onClick={handleCSVExport}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="flex items-center gap-1.5 bg-primary text-primary-foreground px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors warm-shadow"
               >
                 <Download className="w-4 h-4" />
                 <span className="hidden xs:inline">CSV</span>
+              </motion.button>
+              <motion.button
+                onClick={handlePDFExport}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex items-center gap-1.5 bg-secondary text-secondary-foreground px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                <span className="hidden xs:inline">PDF</span>
               </motion.button>
               <motion.button
                 onClick={() => window.print()}
@@ -217,7 +304,7 @@ export function AmortizationTable({ result }: Props) {
                           {expanded ? <ChevronDown className="w-3.5 h-3.5 text-primary" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />}
                           <span>{year}</span>
                         </div>
-                      </td>
+                       </td>
                       <td className="px-4 py-3 text-muted-foreground text-[10px]">({rows.length} pmts)</td>
                       <td className="px-4 py-3 font-mono font-semibold">{formatCurrencyPrecise(rows[0].beginningBalance)}</td>
                       <td className="px-4 py-3 font-mono font-semibold">{formatCurrencyPrecise(rows.reduce((s, r) => s + r.paymentAmount, 0))}</td>

@@ -2,7 +2,7 @@ import { Layout } from '@/components/Layout';
 import { ScrollReveal } from '@/components/ScrollAnimations';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Send, MapPin, Clock, MessageSquare } from 'lucide-react';
+import { Mail, Send, MapPin, Clock, MessageSquare, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSiteContent } from '@/hooks/useSiteContent';
 
@@ -10,6 +10,7 @@ const iconMap: Record<string, any> = { MessageSquare, MapPin, Clock, Mail };
 
 const Contact = () => {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { getText, getMeta } = useSiteContent();
 
   const pageTitle = getText('contact_header', 'title') || 'Contact Us';
@@ -21,20 +22,58 @@ const Contact = () => {
     { icon: 'Clock', title: 'Response Time', desc: 'We aim to respond within 24 hours on business days.' },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Message sent successfully! We\'ll get back to you within 24 hours.');
-    setForm({ name: '', email: '', subject: '', message: '' });
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          access_key: import.meta.env.VITE_WEB3FORMS_ACCESS_KEY, // Add to your .env file
+          subject: `New Contact: ${form.subject}`,
+          from_name: form.name,
+          email: form.email,
+          message: form.message,
+          subject_line: form.subject,
+          to_email: 'support@amortizationcalculator.us',
+          redirect: false,
+          
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Message sent successfully! We\'ll get back to you within 24 hours.');
+        setForm({ name: '', email: '', subject: '', message: '' });
+      } else {
+        throw new Error('Submission failed');
+      }
+    } catch (error) {
+      toast.error('Failed to send message. Please try again or email us directly at support@amortizationcalculator.us');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <Layout>
       <div className="container mx-auto px-4 py-12">
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="text-center mb-14 max-w-2xl mx-auto">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ duration: 0.7 }} 
+          className="text-center mb-14 max-w-2xl mx-auto"
+        >
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-5 py-2 text-xs font-semibold text-primary mb-4">
             <Mail className="w-3.5 h-3.5" /> {pageBadge}
           </div>
-          <h1 className="text-2xl  font-serif font-bold mb-4">{pageTitle}</h1>
+          <h1 className="text-2xl md:text-4xl font-serif font-bold mb-4">{pageTitle}</h1>
           <p className="text-muted-foreground text-sm md:text-lg leading-relaxed">{pageDesc}</p>
         </motion.div>
 
@@ -44,9 +83,17 @@ const Contact = () => {
               const Icon = iconMap[card.icon] || MessageSquare;
               return (
                 <ScrollReveal key={card.title}>
-                  <motion.div className="bg-card rounded-2xl p-5 border border-border/50 warm-shadow" whileHover={{ y: -2 }} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}>
+                  <motion.div 
+                    className="bg-card rounded-2xl p-5 border border-border/50 warm-shadow" 
+                    whileHover={{ y: -2 }} 
+                    initial={{ opacity: 0, x: -20 }} 
+                    animate={{ opacity: 1, x: 0 }} 
+                    transition={{ delay: i * 0.1 }}
+                  >
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><Icon className="w-5 h-5 text-primary" /></div>
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                        <Icon className="w-5 h-5 text-primary" />
+                      </div>
                       <div>
                         <h3 className="font-semibold text-sm mb-1">{card.title}</h3>
                         <p className="text-xs text-muted-foreground leading-relaxed">{card.desc}</p>
@@ -58,27 +105,77 @@ const Contact = () => {
             })}
           </div>
 
-          <motion.form onSubmit={handleSubmit} className="md:col-span-2 bg-card rounded-2xl p-6 md:p-8 border border-border/50 warm-shadow-lg space-y-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
+          <motion.form 
+            onSubmit={handleSubmit} 
+            className="md:col-span-2 bg-card rounded-2xl p-6 md:p-8 border border-border/50 warm-shadow-lg space-y-6" 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Full Name</label>
-                <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" placeholder="Your name" />
+                <input 
+                  required 
+                  value={form.name} 
+                  onChange={e => setForm({ ...form, name: e.target.value })} 
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" 
+                  placeholder="Your name" 
+                  disabled={isSubmitting}
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Email Address</label>
-                <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" placeholder="you@example.com" />
+                <input 
+                  required 
+                  type="email" 
+                  value={form.email} 
+                  onChange={e => setForm({ ...form, email: e.target.value })} 
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" 
+                  placeholder="you@example.com" 
+                  disabled={isSubmitting}
+                />
               </div>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Subject</label>
-              <input required value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" placeholder="What's this about?" />
+              <input 
+                required 
+                value={form.subject} 
+                onChange={e => setForm({ ...form, subject: e.target.value })} 
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" 
+                placeholder="What's this about?" 
+                disabled={isSubmitting}
+              />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Message</label>
-              <textarea required rows={6} value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all resize-none" placeholder="Tell us what's on your mind..." />
+              <textarea 
+                required 
+                rows={6} 
+                value={form.message} 
+                onChange={e => setForm({ ...form, message: e.target.value })} 
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all resize-none" 
+                placeholder="Tell us what's on your mind..." 
+                disabled={isSubmitting}
+              />
             </div>
-            <motion.button type="submit" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} className="w-full flex items-center justify-center gap-2.5 bg-primary text-primary-foreground py-3.5 rounded-xl font-bold text-sm warm-shadow-lg hover:warm-shadow-xl transition-shadow">
-              <Send className="w-4 h-4" /> Send Message
+            <motion.button 
+              type="submit" 
+              whileHover={{ scale: 1.01 }} 
+              whileTap={{ scale: 0.99 }}
+              disabled={isSubmitting}
+              className="w-full flex items-center justify-center gap-2.5 bg-primary text-primary-foreground py-3.5 rounded-xl font-bold text-sm warm-shadow-lg hover:warm-shadow-xl transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" /> Send Message
+                </>
+              )}
             </motion.button>
           </motion.form>
         </div>
