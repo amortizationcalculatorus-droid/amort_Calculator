@@ -86,15 +86,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
             ))}
             {/* Chrome Extension Button */}
             <motion.a
-              href="#"
+              href="https://chromewebstore.google.com/detail/amortizekit-%E2%80%93-loan-calcul/onpilnphbmodhbcaibhjaegjicojcopb"
               className="ml-2 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all duration-200"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={(e) => {
-                e.preventDefault();
-                // TODO: Add Chrome extension link
-                console.log('Chrome Extension clicked');
-              }}
+               target="_blank"
+               rel="noopener noreferrer"
             >
               <Chrome className="w-4 h-4" />
               <span>Chrome Extension</span>
