@@ -5,8 +5,10 @@ import { BarChart3, Menu, X, ArrowRight, Heart, Calculator, TrendingUp, Mail, Ch
 import { toast } from 'sonner';
 import { useSiteContent } from '@/hooks/useSiteContent';
 import { useTrackingScripts } from '@/hooks/useTrackingScripts';
-import { Facebook, Twitter, Instagram, Linkedin, Youtube, Github, Globe } from 'lucide-react';
-
+import { 
+  Facebook, Twitter, Instagram, Linkedin, Youtube, Github, Globe
+} from 'lucide-react';
+import { FaMedium, FaPinterest, FaQuora } from 'react-icons/fa';
 const defaultNavLinks = [
   { to: '/', label: 'Calculator' },
   { to: '/how-to-use', label: 'How to Use' },
@@ -22,6 +24,9 @@ const socialIconMap: Record<string, any> = {
   linkedin: Linkedin,
   youtube: Youtube,
   github: Github,
+  medium: FaMedium,
+  pinterest: FaPinterest,
+  quora: FaQuora,
   website: Globe,
 };
 
@@ -173,142 +178,142 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <main>{children}</main>
 
       {/* Enhanced Footer */}
-      <footer className="relative mt-12 overflow-hidden">
-        {/* Main Footer */}
-        <div className="bg-warm-100 border-t border-border/40">
-          <div className="container mx-auto px-4 pt-14 pb-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8 mb-12">
-              {/* Brand Column */}
-              <div className="col-span-1 sm:col-span-2 md:col-span-1 lg:col-span-2">
-                <div className="flex items-center gap-2.5 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                    <BarChart3 className="w-5 h-5 text-primary" />
-                  </div>
-                  <span className="text-xl font-serif font-bold">
-                    <span className="gradient-text">{footerBrandTitle.substring(0, 5)}</span>{footerBrandTitle.substring(5)}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-5 max-w-xs">
-                  {footerBrandDesc}
-                </p>
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-3">
-                  {footerStats.map(s => (
-                    <div key={s.label} className="text-center bg-card rounded-xl p-3 warm-shadow">
-                      <div className="text-lg font-bold font-mono text-primary">{s.value}</div>
-                      <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{s.label}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Product Links */}
-              <div>
-                <h4 className="font-semibold text-sm mb-4 flex items-center gap-2">
-                  <Calculator className="w-4 h-4 text-primary" /> Product
-                </h4>
-                <div className="space-y-3">
-                  {[
-                    { to: '/', label: 'Amortization Calculator' },
-                    { to: '/how-to-use', label: 'User Guide' },
-                    { to: '/blog', label: 'Financial Blog' },
-                  ].map(link => (
-                    <Link key={link.to} to={link.to} className="group flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors">
-                      <ArrowRight className="w-3 h-3 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all" />
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* Company Links */}
-              <div>
-                <h4 className="font-semibold text-sm mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-primary" /> Company
-                </h4>
-                <div className="space-y-3">
-                  {[
-                    { to: '/about', label: 'About Us' },
-                    { to: '/contact', label: 'Contact' },
-                    { to: '/disclaimer', label: 'Disclaimer' },
-                    { to: '/terms', label: 'Terms & Conditions' },
-                    { to: '/privacy', label: 'Privacy Policy' },
-                  ].map((link, i) => (
-                    <Link key={i} to={link.to} className="group flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors">
-                      <ArrowRight className="w-3 h-3 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all" />
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* Resources */}
-              <div>
-                <h4 className="font-semibold text-sm mb-4 flex items-center gap-2">
-                  <Heart className="w-4 h-4 text-primary" /> Resources
-                </h4>
-                <div className="space-y-3">
-                  <span className="block text-sm text-muted-foreground cursor-pointer hover:text-primary transition-colors">
-                    Amortization Formula
-                  </span>
-                  <span className="block text-sm text-muted-foreground cursor-pointer hover:text-primary transition-colors">
-                    Extra Payment Calculator
-                  </span>
-                  <span className="block text-sm text-muted-foreground cursor-pointer hover:text-primary transition-colors">
-                    CSV Export Tool
-                  </span>
-                </div>
-              </div>
+     <footer className="relative mt-12 overflow-hidden">
+  {/* Main Footer */}
+  <div className="bg-warm-100 border-t border-border/40">
+    <div className="container mx-auto px-4 pt-14 pb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8 mb-12">
+        {/* Brand Column */}
+        <div className="col-span-1 sm:col-span-2 md:col-span-1 lg:col-span-2">
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-primary" />
             </div>
+            <span className="text-xl font-serif font-bold">
+              <span className="gradient-text">{footerBrandTitle.substring(0, 5)}</span>{footerBrandTitle.substring(5)}
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-5 max-w-xs">
+            {footerBrandDesc}
+          </p>
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-3">
+            {footerStats.map(s => (
+              <div key={s.label} className="text-center bg-card rounded-xl p-3 warm-shadow">
+                <div className="text-lg font-bold font-mono text-primary">{s.value}</div>
+                <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
 
-         
+        {/* Product Links */}
+        <div>
+          <h4 className="font-semibold text-sm mb-4 flex items-center gap-2">
+            <Calculator className="w-4 h-4 text-primary" /> Product
+          </h4>
+          <div className="space-y-3">
+            {[
+              { to: '/', label: 'Amortization Calculator' },
+              { to: '/how-to-use', label: 'User Guide' },
+              { to: '/blog', label: 'Financial Blog' },
+            ].map(link => (
+              <Link key={link.to} to={link.to} className="group flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors">
+                <ArrowRight className="w-3 h-3 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all" />
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </div>
 
-{/* Replace the entire social links section in the footer */}
-<div>
-  <h4 className="font-semibold text-sm mb-4 flex items-center gap-2">
-    <Share2 className="w-4 h-4 text-primary" /> Follow Us
-  </h4>
-  <div className="space-y-3">
-    {(() => {
-      // This will now re-render when getMeta returns updated data
-      const socialMeta = getMeta('footer_social');
-      const socialLinks = socialMeta?.links as Array<{ platform: string; url: string; icon?: string }> || [];
-      
-      if (socialLinks.length === 0) {
-        return <p className="text-sm text-muted-foreground">No social links configured</p>;
-      }
-      
-      return socialLinks.map((link, i) => {
-        const IconComponent = socialIconMap[link.platform?.toLowerCase()] || Globe;
-        return (
-          <a
-            key={i}
-            href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex items-center gap-2.5 text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            <IconComponent className="w-4 h-4" />
-            <span className="capitalize">{link.platform}</span>
-          </a>
-        );
-      });
-    })()}
-  </div>
-</div>
+        {/* Company Links */}
+        <div>
+          <h4 className="font-semibold text-sm mb-4 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-primary" /> Company
+          </h4>
+          <div className="space-y-3">
+            {[
+              { to: '/about', label: 'About Us' },
+              { to: '/contact', label: 'Contact' },
+              { to: '/disclaimer', label: 'Disclaimer' },
+              { to: '/terms', label: 'Terms & Conditions' },
+              { to: '/privacy', label: 'Privacy Policy' },
+            ].map((link, i) => (
+              <Link key={i} to={link.to} className="group flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors">
+                <ArrowRight className="w-3 h-3 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all" />
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </div>
 
-            {/* Bottom Bar */}
-            <div className="border-t border-border/50 pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
-              <p className="text-xs text-muted-foreground">{copyrightText}</p>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                {copyrightSub.includes('❤') ? (
-                  <>Built with <Heart className="w-3 h-3 text-destructive fill-destructive" /> for financial literacy</>
-                ) : copyrightSub}
-              </p>
+        {/* Resources and Social Links Container */}
+        <div className="lg:col-span-1">
+          {/* Resources */}
+          <div className="mb-6">
+            <h4 className="font-semibold text-sm mb-4 flex items-center gap-2">
+              <Heart className="w-4 h-4 text-primary" /> Resources
+            </h4>
+            <div className="space-y-3">
+              <span className="block text-sm text-muted-foreground cursor-pointer hover:text-primary transition-colors">
+                Amortization Formula
+              </span>
+              <span className="block text-sm text-muted-foreground cursor-pointer hover:text-primary transition-colors">
+                Extra Payment Calculator
+              </span>
+              <span className="block text-sm text-muted-foreground cursor-pointer hover:text-primary transition-colors">
+                CSV Export Tool
+              </span>
+            </div>
+          </div>
+
+          {/* Social Links - positioned below Resources */}
+          <div>
+            <h4 className="font-semibold text-sm mb-4 flex items-center gap-2">
+              <Share2 className="w-4 h-4 text-primary" /> Follow Us
+            </h4>
+            <div className="space-y-3">
+              {(() => {
+                const socialMeta = getMeta('footer_social');
+                const socialLinks = socialMeta?.links as Array<{ platform: string; url: string; icon?: string }> || [];
+                
+                if (socialLinks.length === 0) {
+                  return <p className="text-sm text-muted-foreground">No social links configured</p>;
+                }
+                
+                return socialLinks.map((link, i) => {
+                  const IconComponent = socialIconMap[link.platform?.toLowerCase()] || Globe;
+                  return (
+                    <a
+                      key={i}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center gap-2.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <IconComponent className="w-4 h-4" />
+                      <span className="capitalize">{link.platform}</span>
+                    </a>
+                  );
+                });
+              })()}
             </div>
           </div>
         </div>
-      </footer>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="border-t border-border/50 pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">{copyrightText}</p>
+        <p className="text-xs text-muted-foreground flex items-center gap-1">
+          {copyrightSub.includes('❤') ? (
+            <>Built with <Heart className="w-3 h-3 text-destructive fill-destructive" /> for financial literacy</>
+          ) : copyrightSub}
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
     </div>
   );
 }

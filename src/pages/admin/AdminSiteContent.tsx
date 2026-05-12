@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import { Facebook, Twitter, Instagram, Linkedin, Youtube, Github, Globe } from 'lucide-react';
+import { FaMedium, FaPinterest, FaQuora } from 'react-icons/fa';
 
 type SiteContent = Tables<'site_content'>;
 
@@ -178,13 +179,16 @@ const Field = ({
 const SocialLinksEditor = ({ value, onChange }: { value: any[]; onChange: (v: any[]) => void }) => {
   const items: { platform: string; url: string; icon?: string }[] = Array.isArray(value) ? value : [];
   
-  const platforms = [
+   const platforms = [
     { value: 'facebook', label: 'Facebook', icon: Facebook },
     { value: 'twitter', label: 'Twitter', icon: Twitter },
     { value: 'instagram', label: 'Instagram', icon: Instagram },
     { value: 'linkedin', label: 'LinkedIn', icon: Linkedin },
     { value: 'youtube', label: 'YouTube', icon: Youtube },
     { value: 'github', label: 'GitHub', icon: Github },
+    { value: 'medium', label: 'Medium', icon: FaMedium },
+    { value: 'pinterest', label: 'Pinterest', icon: FaPinterest },
+    { value: 'quora', label: 'Quora', icon: FaQuora },
     { value: 'website', label: 'Website', icon: Globe },
   ];
   
