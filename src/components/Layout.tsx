@@ -250,22 +250,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Resources and Social Links Container */}
         <div className="lg:col-span-1">
           {/* Resources */}
-          <div className="mb-6">
-            <h4 className="font-semibold text-sm mb-4 flex items-center gap-2">
-              <Heart className="w-4 h-4 text-primary" /> Resources
-            </h4>
-            <div className="space-y-3">
-              <span className="block text-sm text-muted-foreground cursor-pointer hover:text-primary transition-colors">
-                Amortization Formula
-              </span>
-              <span className="block text-sm text-muted-foreground cursor-pointer hover:text-primary transition-colors">
-                Extra Payment Calculator
-              </span>
-              <span className="block text-sm text-muted-foreground cursor-pointer hover:text-primary transition-colors">
-                CSV Export Tool
-              </span>
-            </div>
-          </div>
+        
 
           {/* Social Links - positioned below Resources */}
           <div>
