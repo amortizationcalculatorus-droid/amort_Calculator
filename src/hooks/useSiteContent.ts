@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -15,26 +15,59 @@ interface SiteContentItem {
 // Cache to avoid refetching on every component mount
 let contentCache: SiteContentItem[] | null = null;
 let cacheTimestamp = 0;
-const CACHE_TTL = 60000; // 1 minute
+const CACHE_TTL = 5000; // 5 seconds instead of 1 minute
+
+// Add a global event for cache invalidation
+const CACHE_INVALIDATED_EVENT = 'siteContentCacheInvalidated';
 
 export function useSiteContent(prefix?: string) {
   const [items, setItems] = useState<SiteContentItem[]>(contentCache ?? []);
   const [loading, setLoading] = useState(!contentCache);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const fetchContent = useCallback(async () => {
+    const { data } = await supabase.from('site_content').select('*');
+    contentCache = data ?? [];
+    cacheTimestamp = Date.now();
+    setItems(contentCache);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
     const now = Date.now();
+    // Reduced TTL - will refresh after 5 seconds
     if (contentCache && now - cacheTimestamp < CACHE_TTL) {
       setItems(contentCache);
       setLoading(false);
       return;
     }
 
-    supabase.from('site_content').select('*').then(({ data }) => {
-      contentCache = data ?? [];
-      cacheTimestamp = Date.now();
-      setItems(contentCache);
-      setLoading(false);
-    });
+    fetchContent();
+  }, [refreshKey, fetchContent]);
+
+  useEffect(() => {
+    const handleCacheInvalidated = () => {
+      // Clear cache immediately and force refresh
+      contentCache = null;
+      cacheTimestamp = 0;
+      setRefreshKey(prev => prev + 1);
+    };
+
+    window.addEventListener(CACHE_INVALIDATED_EVENT, handleCacheInvalidated);
+    
+    const handleFocus = () => {
+      const now = Date.now();
+      // Reduced TTL check
+      if (contentCache && now - cacheTimestamp > CACHE_TTL) {
+        setRefreshKey(prev => prev + 1);
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener(CACHE_INVALIDATED_EVENT, handleCacheInvalidated);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const filtered = prefix ? items.filter(i => i.section_key.startsWith(prefix)) : items;
@@ -51,8 +84,9 @@ export function useSiteContent(prefix?: string) {
   return { items: filtered, loading, get, getText, getMeta };
 }
 
-// Force refresh on next mount (call after admin saves)
 export function invalidateSiteContentCache() {
   contentCache = null;
   cacheTimestamp = 0;
+  // Dispatch event to notify all components using the hook
+  window.dispatchEvent(new CustomEvent('siteContentCacheInvalidated'));
 }

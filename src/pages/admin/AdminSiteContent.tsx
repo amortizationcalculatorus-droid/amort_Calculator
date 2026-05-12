@@ -6,8 +6,10 @@ import { invalidateSiteContentCache } from '@/hooks/useSiteContent';
 import {
   Save, Home, Info, BookOpen, Mail, PanelTop, PanelBottom, Settings,
   ChevronRight, Plus, Trash2, GripVertical,
+  Share2,
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
+import { Facebook, Twitter, Instagram, Linkedin, Youtube, Github, Globe } from 'lucide-react';
 
 type SiteContent = Tables<'site_content'>;
 
@@ -80,6 +82,15 @@ const PAGES = [
       { key: 'howto_steps', label: 'Guide Steps', fields: ['meta.steps:steps'] },
       { key: 'howto_example', label: 'Example Scenario', fields: ['title:Section Title', 'meta.standard:example_scenario', 'meta.extra:example_scenario'] },
       { key: 'howto_formula', label: 'Formula', fields: ['title:Section Title', 'content:Formula Expression', 'meta.variables:variables'] },
+    ],
+  },
+   {
+    id: 'social',
+    label: 'Social Links',
+    icon: Share2, // Import Share2 from lucide-react
+    description: 'Manage social media links displayed in footer',
+    sections: [
+      { key: 'footer_social', label: 'Social Media Links', fields: ['meta.links:social_links'] },
     ],
   },
   {
@@ -163,6 +174,77 @@ const Field = ({
     )}
   </div>
 );
+
+const SocialLinksEditor = ({ value, onChange }: { value: any[]; onChange: (v: any[]) => void }) => {
+  const items: { platform: string; url: string; icon?: string }[] = Array.isArray(value) ? value : [];
+  
+  const platforms = [
+    { value: 'facebook', label: 'Facebook', icon: Facebook },
+    { value: 'twitter', label: 'Twitter', icon: Twitter },
+    { value: 'instagram', label: 'Instagram', icon: Instagram },
+    { value: 'linkedin', label: 'LinkedIn', icon: Linkedin },
+    { value: 'youtube', label: 'YouTube', icon: Youtube },
+    { value: 'github', label: 'GitHub', icon: Github },
+    { value: 'website', label: 'Website', icon: Globe },
+  ];
+  
+  const update = (i: number, key: string, v: string) => {
+    onChange(items.map((item, idx) => idx === i ? { ...item, [key]: v } : item));
+  };
+  
+  return (
+    <div className="space-y-3">
+      {items.map((item, i) => {
+        const SelectedIcon = platforms.find(p => p.value === item.platform?.toLowerCase())?.icon || Globe;
+        return (
+          <div key={i} className="border border-border/50 rounded-xl p-4 bg-background space-y-3 group">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <SelectedIcon className="w-3.5 h-3.5" /> Social Link {i + 1}
+              </span>
+              <button
+                onClick={() => onChange(items.filter((_, idx) => idx !== i))}
+                className="text-muted-foreground/40 hover:text-destructive transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[11px] text-muted-foreground font-medium">Platform</label>
+                <select
+                  value={item.platform || ''}
+                  onChange={e => update(i, 'platform', e.target.value)}
+                  className="w-full bg-muted/30 border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  <option value="">Select platform</option>
+                  {platforms.map(p => (
+                    <option key={p.value} value={p.value}>{p.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[11px] text-muted-foreground font-medium">URL</label>
+                <input
+                  value={item.url || ''}
+                  onChange={e => update(i, 'url', e.target.value)}
+                  placeholder="https://facebook.com/yourpage"
+                  className="w-full bg-muted/30 border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+      <button
+        onClick={() => onChange([...items, { platform: '', url: '' }])}
+        className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 border border-dashed border-primary/40 hover:border-primary/60 px-3 py-1.5 rounded-lg transition-colors"
+      >
+        <Plus className="w-3 h-3" /> Add Social Link
+      </button>
+    </div>
+  );
+};
 
 // nav links: [{label, href}]
 const NavLinksEditor = ({ value, onChange }: { value: any[]; onChange: (v: any[]) => void }) => {
@@ -444,9 +526,12 @@ const AdminSiteContent = () => {
     return (data as any)[fieldPath] ?? '';
   };
 
-  const handleSaveAll = async () => {
-    if (Object.keys(dirty).length === 0) return toast.info('No changes to save');
-    setSaving(true);
+ // In AdminSiteContent component's handleSaveAll function:
+const handleSaveAll = async () => {
+  if (Object.keys(dirty).length === 0) return toast.info('No changes to save');
+  setSaving(true);
+  
+  try {
     for (const [key, values] of Object.entries(dirty)) {
       const existing = getContent(key);
       const payload = {
@@ -456,18 +541,31 @@ const AdminSiteContent = () => {
         content: values.content || null,
         metadata: values.metadata || {},
       };
+      
       if (existing) {
         await supabase.from('site_content').update(payload).eq('id', existing.id);
       } else {
         await supabase.from('site_content').insert(payload);
       }
     }
-    toast.success(`Saved ${Object.keys(dirty).length} section(s)!`);
-    invalidateSiteContentCache();
+    
+    // Clear dirty state first
     setDirty({});
+    
+    // Refetch content from DB
+    await fetchContent();
+    
+    // Invalidate cache for all other components
+    invalidateSiteContentCache();
+    
+    toast.success(`Saved ${Object.keys(dirty).length} section(s)!`);
+  } catch (error) {
+    toast.error('Failed to save changes');
+    console.error('Save error:', error);
+  } finally {
     setSaving(false);
-    fetchContent();
-  };
+  }
+};
 
   const toggleSection = (key: string) => {
     setExpandedSections(prev => {
@@ -514,7 +612,15 @@ if (label.includes('URL') || label.includes('Logo URL')) {
     </div>
   );
 }
-
+// Add this after your other special editors (around line 600-650)
+if (label === 'social_links') {
+  return (
+    <div key={path} className="space-y-2">
+      <SectionLabel>Social Media Links</SectionLabel>
+      <SocialLinksEditor value={value} onChange={onChange} />
+    </div>
+  );
+}
     // ── Special array/object editors keyed by label ──
     if (label === 'nav_links') {
       return (

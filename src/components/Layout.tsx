@@ -1,10 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BarChart3, Menu, X, ArrowRight, Heart, Calculator, TrendingUp, Mail, Chrome } from 'lucide-react';
+import { BarChart3, Menu, X, ArrowRight, Heart, Calculator, TrendingUp, Mail, Chrome, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSiteContent } from '@/hooks/useSiteContent';
 import { useTrackingScripts } from '@/hooks/useTrackingScripts';
+import { Facebook, Twitter, Instagram, Linkedin, Youtube, Github, Globe } from 'lucide-react';
 
 const defaultNavLinks = [
   { to: '/', label: 'Calculator' },
@@ -13,6 +14,16 @@ const defaultNavLinks = [
   { to: '/blog', label: 'Blog' },
   { to: '/contact', label: 'Contact' },
 ];
+
+const socialIconMap: Record<string, any> = {
+  facebook: Facebook,
+  twitter: Twitter,
+  instagram: Instagram,
+  linkedin: Linkedin,
+  youtube: Youtube,
+  github: Github,
+  website: Globe,
+};
 
 const defaultStats = [
   { label: 'Calculations', value: '100K+' },
@@ -249,6 +260,42 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
             </div>
+
+         
+
+{/* Replace the entire social links section in the footer */}
+<div>
+  <h4 className="font-semibold text-sm mb-4 flex items-center gap-2">
+    <Share2 className="w-4 h-4 text-primary" /> Follow Us
+  </h4>
+  <div className="space-y-3">
+    {(() => {
+      // This will now re-render when getMeta returns updated data
+      const socialMeta = getMeta('footer_social');
+      const socialLinks = socialMeta?.links as Array<{ platform: string; url: string; icon?: string }> || [];
+      
+      if (socialLinks.length === 0) {
+        return <p className="text-sm text-muted-foreground">No social links configured</p>;
+      }
+      
+      return socialLinks.map((link, i) => {
+        const IconComponent = socialIconMap[link.platform?.toLowerCase()] || Globe;
+        return (
+          <a
+            key={i}
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-2.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            <IconComponent className="w-4 h-4" />
+            <span className="capitalize">{link.platform}</span>
+          </a>
+        );
+      });
+    })()}
+  </div>
+</div>
 
             {/* Bottom Bar */}
             <div className="border-t border-border/50 pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
