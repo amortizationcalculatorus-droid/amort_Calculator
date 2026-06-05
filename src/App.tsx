@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { useFavicon } from "./hooks/useFavicon";
+import { Analytics } from "@vercel/analytics/react"; // Add this import
 import Index from "./pages/Index";
 import HowToUse from "./pages/HowToUse";
 import About from "./pages/About";
@@ -33,14 +34,12 @@ import Privacy from "./pages/Privacy";
 
 const queryClient = new QueryClient();
 
-
 const AppContent = () => {
-
   useFavicon(); 
   
   return (
     <BrowserRouter>
-    <ScrollToTop /> 
+      <ScrollToTop /> 
       <AuthProvider>
         <Routes>
           <Route path="/" element={<Index />} />
@@ -77,6 +76,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <Analytics /> {/* Add Analytics component here */}
       <AppContent /> 
     </TooltipProvider>
   </QueryClientProvider>
